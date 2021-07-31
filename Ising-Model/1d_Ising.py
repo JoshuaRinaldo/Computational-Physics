@@ -16,21 +16,21 @@ def initialize(N,p):
     spin,E,M = [1]*N,0.,0. #creates list of ones
     
     for i in range(1,N):
-        if rd.random()>p:
+        if rd.random()>p: #randomly generates up and down spins according to a defined probability, p.
             spin[i] = -1 #sets ~0.6 as down
         E = E - spin[i-1]*spin[i] #calculates E and M
         M = M + spin[i]
     return spin, E-spin[N-1]*spin[0], M+spin[0]
 
 def update(N,spin,kT,dE,E,M):
-    flip = 0
+    flip = 0 #creates flip varaible. If 1 then flip, if 0 then no flip.
     if dE<0.0:
         flip = 1
     else:
         exp = np.exp(-dE/kT)
-        if rd.random()<exp: #checks random
+        if rd.random()<exp: #determines if there is a random flip that occurs, dependant on dE and kT
             flip = 1
-    if flip==1:
+    if flip==1: #if flip is yes, then we change the spin state and calculate new E and M values.
         E = E + dE
         M = M -2*spin
         spin = -spin
@@ -44,22 +44,22 @@ def run(N,kT,p):
     E.append(En/N) #appends initial result
     M.append(Mn)
     spinlist = np.array(spins)
-    Iter = N*150
+    Iter = N*150 #determines number of iterations per spin position
     for iteration in range(0,Iter+1):
         i = rd.randint(0,N-1) #pick random position
         dE = 2*spins[i] * (spins[i-1] + spins[(i+1)%N]) #calculate dE
         
 
-        En,Mn,spins[i] = update(N,spins[i],kT,dE,En,Mn)
+        En,Mn,spins[i] = update(N,spins[i],kT,dE,En,Mn) #determines if there is a flip
 
         spins = np.array(spins) #save values
-        E.append(En/N)
+        E.append(En/N) #saves our E and M values for later comparison
         M.append(Mn/N)
         spinlist = np.vstack((spinlist,spins))
     
     
     Beta = 1/kT
-    E_an = -np.tanh(Beta)
+    E_an = -np.tanh(Beta) #calculates analytical E
     
     
     return spinlist, E, E_an, M #retun spins and values
@@ -72,10 +72,8 @@ S_numerical = []
 kt_list = []
 
 
-#This is what I use to calculate entropy. Running this for many iterations (50)
-#produces an average entropy which is below the analytical entropy
-#running it once freqently produces results which are way off. It seems like there is
-#much less consistency
+#This is what I use to calculate entropy. This must be run for a considerable amount of time
+#before it becomes consistent with the analytical solution.
 
 kt_over_ep = np.linspace(0.1,6,200)
 
@@ -162,6 +160,7 @@ plt.close()
 
 
 
+#this calculates our analytical and numerical solutions
 s = []
 for kTn in kt_over_ep:
     sn = (np.log(2*np.cosh(1/kTn))-(1/kTn)*np.tanh(1/kTn))
@@ -170,7 +169,7 @@ for kTn in kt_over_ep:
 S = np.zeros(len(E_over_kt))
 
 for i in range(1,len(E_over_kt)-1):
-    S[i] = S[i-1]+(E_over_kt[i+1]-E_over_kt[i])/kt_list[i] #calculates S
+    S[i] = S[i-1]+(E_over_kt[i+1]-E_over_kt[i])/kt_list[i] #calculates numerical solution
 
 S = S[:len(S)-1]
 
